@@ -41,8 +41,9 @@ ui <- navbarPage(title = "webMCP",
              # the main panel contains the output table and download button
              mainPanel(
                
-               ## download output button
-               downloadButton(outputId = "downloadEstimates",label = "Download (m)MCP-counter estimates"),
+               ## conditional output for the download button
+               uiOutput("downloadButton"),
+               #downloadButton(outputId = "downloadEstimates",label = "Download (m)MCP-counter estimates"),
                
                ## output: table of estimates
                dataTableOutput(outputId = "estimatesTable")
@@ -109,6 +110,12 @@ server <- function(input, output) {
       estimates$est <- t(mMCPcounter.estimate(gep))
     }
   })
+  
+  output$downloadButton <- renderUI({
+    if(is.null(estimates$est))return()
+    else{downloadButton(outputId = "downloadEstimates",label = "Download (m)MCP-counter estimates")}
+  })
+  
   
   # output the rounded estimates in a data table
   output$estimatesTable <- DT::renderDataTable(local.round(estimates$est, digits = 2),rownames = TRUE)
