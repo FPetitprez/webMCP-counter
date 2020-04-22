@@ -10,29 +10,53 @@ options(shiny.maxRequestSize=50*1024^2)
 options(java.parameters = "-Xmx2048m")
 
 # user interface: specify all input and output that are present in the app
-ui <- fluidPage(
+ui <- navbarPage(title = "webMCP",
   
-  "Welcome to the (m)MCP-counter server",
+  # Several tabs: 1 to run MCP-counter, the others for downstream analyses
+  tabPanel("Step 1: run (m)MCP-counter",
+           
+           tags$h1("Welcome to webMCP"),
+           
+           tags$h4("Web app for MCP-counter and mMCP-counter"),
+           
+           sidebarLayout(
+             
+             # The sidebar contains all the input the use has to provide
+             sidebarPanel(
+               
+               ## file input: user-supplied gene expression profiles
+               fileInput(inputId = "geneExpressionProfiles",label = "Upload gene expression profiles file",accept = c("xlsx","txt","csv")),
+               
+               ## file type select box: specifies the file type (xlsx or text format, in this case also specifies the separator)
+               selectInput(inputId = "fileType",label = "Select the file format",choices = c("xlsx","tab-separated text file (txt, tsv, csv)","comma-separated text file (txt, tsv, csv)","semi-colon-separated text file (txt, tsv, csv)")),
+               
+               ## radio buttons for the organism
+               radioButtons(inputId = "organism",label = "Select organism", choices = c("Human (Homo sapiens)","Mouse (Mus musculus)")),
+               
+               ## run button
+               actionButton(inputId = "runButton",label = "Run (m)MCP-counter"),
+               
+             ),
+             
+             # the main panel contains the output table and download button
+             mainPanel(
+               
+               ## download output button
+               downloadButton(outputId = "downloadEstimates",label = "Download (m)MCP-counter estimates"),
+               
+               ## output: table of estimates
+               dataTableOutput(outputId = "estimatesTable")
+               
+               
+             )
+             
+           )
+  ),
   
-  ## file input: user-supplied gene expression profiles
-  fileInput(inputId = "geneExpressionProfiles",label = "Upload gene expression profiles file",accept = c("xlsx","txt","csv")),
   
-  ## file type select box: specifies the file type (xlsx or text format, in this case also specifies the separator)
-  selectInput(inputId = "fileType",label = "Select the file format",choices = c("xlsx","tab-separated text file (txt, tsv, csv)","comma-separated text file (txt, tsv, csv)","semi-colon-separated text file (txt, tsv, csv)")),
+  tabPanel("Step 2: Downstream analyses",
+           "Ongoing. Stay tuned!")
   
-  ## radio buttons for the organism
-  radioButtons(inputId = "organism",label = "Select organism", choices = c("Human (Homo sapiens)","Mouse (Mus musculus)")),
-  
-  ## run button
-  actionButton(inputId = "runButton",label = "Run (m)MCP-counter"),
-  
-  ## output: table of estimates
-  dataTableOutput(outputId = "estimatesTable"),
-  
-  ## ask what format to use 
-  
-  ## download output button
-  downloadButton(outputId = "downloadEstimates",label = "Download (m)MCP-counter estimates")
   
 )
 
@@ -96,7 +120,7 @@ server <- function(input, output) {
                                                 })
   
 }
-
+  
 
 
 shinyApp(ui = ui, server = server)
