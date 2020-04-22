@@ -104,7 +104,19 @@ formatDiagnostic <- function(table, version = c("h","m")[1]){
   # Test whether table is a data frame
   if(!is.data.frame(table)){return("The file you provided could not be transformed into a data set. Please pay attention to the formating guidelines and try again.")}
   
+  # Test if all columns are numeric
+  if(!all(apply(table,2,is.numeric))){return("Non-numeric columns have been detected. Please provide a numeric-only table, with the exception of sample and gene names.")}
   
+  # Test if ENSEMBL gene IDs (to be supported in a future version)
+  if(length(grep("ENS",rownames(table))) > 50){return("ENSEMBL gene IDs detected. For now, this program only accepts HUGO Gene Symbols. Please provide the gene names as Gene Symbols. The support for ENSEMBL Gene IDs is planned in a future release.")}
+  
+  # Test if Human of Mouse based on the gene symbol case (Human: ALL CAPITAL, Mouse: First Letter Capital Only).
+  firstLetterCapital = sum(toupper(substr(rownames(table),1,1))==substr(rownames(table),1,1))>0.8*nrow(table) # TRUE <=> at least 80% gene names start with capital letter
+  if(!firstLetterCapital){return("Gene symbols have not been recognized. Please provide only human or murine data with genes identified through their Gene Symbols.")}
+  allCapital = sum(toupper(rownames(table))==rownames(table))>0.8*nrow(table) # TRUE <=> at least 80% gene names are in full capital
+  secondLetterCapital = sum(toupper(substr(rownames(table),2,2))==substr(rownames(table),2,2))>0.8*nrow(table) # TRUE <=> at least 80% gene names have a 2nd capital letter
+  if(version=="h" & !(allCapital)){return("Gene symbols provided do not fit the human nomenclature. Please check the organism setting or provide human gene symbols.")}
+  if(version=="m" & secondLetterCapital){return("Gene symbols provided do not fit the murine nomenclature. Please check the organism setting or provide murine gene symbols.")}
   
   
   return(paste("File loaded succesfully and correctly interpreted. ",c("h"="","m"="m")[version],"MCP-counter will be run shortly.",sep=""))
