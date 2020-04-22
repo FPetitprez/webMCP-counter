@@ -36,6 +36,9 @@ ui <- navbarPage(title = "webMCP",
                ## run button
                actionButton(inputId = "runButton",label = "Run (m)MCP-counter"),
                
+               ## text output for the format diagnostic results to be displayed
+               textOutput("diagnosticResult")
+               
              ),
              
              # the main panel contains the output table and download button
@@ -61,6 +64,9 @@ ui <- navbarPage(title = "webMCP",
   
 )
 
+
+### Local functions
+
 # adapation of round: does nothing if applied to NULL. This is meant to avoid the error when no user data has been provided yet
 local.round <- function(x,digits=2){
   if(!is.null(x))return(round(x,digits = digits))
@@ -75,13 +81,50 @@ formatForExport <- function(table,rowNameHeader){
   return(res)
 }
 
+
+# formatFits test if there is an agreement between the file extension and the file format
+formatFits <- function(filePath,fileFormat){
+  
+  extension = substr(filePath,nchar(filePath)-2, nchar(filePath))
+  
+  return(
+    ((extension %in% c("txt","csv","tsv")) & (fileFormat !="xlsx")) |
+    ((extension == "lsx") & (fileFormat =="xlsx"))
+  )
+  
+}
+
+
+# formatDiagnostic tests whether the table provided by the user fits the format required and returns a char that states if the format is correct or how to correct it.
+formatDiagnostic <- function(table, version = c("h","m")[1]){
+  
+  # Test that table is not NULL
+  if(is.null(table)){return("The file you provided could not be interpreted as a table. Please try again with an other file.")}
+  
+  # Test whether table is a data frame
+  if(!is.data.frame(table)){return("The file you provided could not be transformed into a data set. Please pay attention to the formating guidelines and try again.")}
+  
+  
+  
+  
+  return(paste("File loaded succesfully and correctly interpreted. ",c("h"="","m"="m")[version],"MCP-counter will be run shortly.",sep=""))
+  
+}
+
+
+
+
+
+
+
+
 # server function: all computation using input
 server <- function(input, output) {
   
   library(xlsx)
   
   # initialize the estimates as a reactive value. This will be invalidated each time (m)MCP-counter in run.
-  estimates <- reactiveValues(est = NULL)
+  estimates <- reactiveValues(est = NULL, version = "h")
   
   # code to be run when the user clicks the "run (m)MCP-counter" button: read file path, determine format to read data, and run the appopriate version of MCP-counter depending on organism.
   observeEvent(input$runButton,{
@@ -89,31 +132,55 @@ server <- function(input, output) {
     # get (tmp) path to user-provided file
     userFile <- (input$geneExpressionProfiles)$datapath
     
-    # file manipulations needed if input provided as excel spreadsheet
-    if(input$fileType=="xlsx"){
-      gep <- read.xlsx2(userFile,sheetIndex = 1,check.names=FALSE,stringsAsFactors=FALSE,colClasses = c("character",rep("numeric",10000)))
-      geneNames <- gep[,1]
-      gep <- gep[,2:ncol(gep)]
-      rownames(gep) <- geneNames
+    
+    # proceed only if file extension matches the declared file format
+    if(formatFits(userFile,input$fileType)){
+      
+      
+      # file manipulations needed if input provided as excel spreadsheet
+      if(input$fileType=="xlsx"){
+        gep <- read.xlsx2(userFile,sheetIndex = 1,check.names=FALSE,stringsAsFactors=FALSE,colClasses = c("character",rep("numeric",10000)))
+        geneNames <- gep[,1]
+        gep <- gep[,2:ncol(gep)]
+        rownames(gep) <- geneNames
+      }
+      else{ # text format, only separator changes
+        sepText <- substr(input$fileType,1,3)
+        sep <- c("tab" = "\t", "com" = ",", "sem" = ";")[sepText]
+        gep <- read.table(userFile,sep=sep,header = TRUE, row.names = 1,stringsAsFactors = FALSE, check.names = FALSE)
+      }
+      
+      if(input$organism=="Mouse (Mus musculus)"){estimates$version <- "m"}
+      
+      diagnostic <- formatDiagnostic(gep,estimates$version)
+      
+      output$diagnosticResult <- renderText(diagnostic)
+      
+      # try to run MCP-counter only if file fits format requirements
+      if(substr(diagnostic,1,50)=="File loaded succesfully and correctly interpreted."){
+        
+        # run the appropriate version of MCP-counter depending on the organism 
+        if(estimates$version=="h"){
+          estimates$est <- t(data.frame(MCPcounter.estimate(gep,featuresType = "HUGO_symbols"),check.names = FALSE))
+        }
+        else{
+          estimates$est <- t(mMCPcounter.estimate(gep))
+        }
+        
+      }
+      
     }
-    else{ # text format, only separator changes
-      sepText <- substr(input$fileType,1,3)
-      sep <- c("tab" = "\t", "com" = ",", "sem" = ";")[sepText]
-      gep <- read.table(userFile,sep=sep,header = TRUE, row.names = 1,stringsAsFactors = FALSE, check.names = FALSE)
+    else{ # file extension does not match declared file format
+      output$diagnosticResult <- renderText("File extension does not match the file format you declared. Please correct and try again.")
     }
+    
    
-   # run the appropriate version of MCP-counter depending on the organism 
-   if(input$organism=="Human (Homo sapiens)"){
-      estimates$est <- t(data.frame(MCPcounter.estimate(gep,featuresType = "HUGO_symbols"),check.names = FALSE))
-    }
-    else{
-      estimates$est <- t(mMCPcounter.estimate(gep))
-    }
   })
+  
   
   output$downloadButton <- renderUI({
     if(is.null(estimates$est))return()
-    else{downloadButton(outputId = "downloadEstimates",label = "Download (m)MCP-counter estimates")}
+    else{downloadButton(outputId = "downloadEstimates",label = paste("Download ",c("h"="","m"="m")[estimates$version],"MCP-counter estimates",sep=""))}
   })
   
   
