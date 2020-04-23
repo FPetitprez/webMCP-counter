@@ -59,8 +59,23 @@ ui <- navbarPage(title = "webMCP",
   
   
   tabPanel("Step 2: Downstream analyses",
-           "Ongoing. Stay tuned!")
+           "Ongoing. Stay tuned!"),
   
+  
+  tabPanel("What is MCP-counter?",
+           "Ongoing. Stay tuned!"),
+  
+  
+  tabPanel("Citation",
+           
+           tags$p("If you use webMCP in a scientific publication, please cite the original article of the MCP-counter version you used (human or mouse), as well as:"),
+           tags$p("CITATION INFO FOR THE SHINY APP"),
+           tags$br(),
+           tags$p("For the human MCP-counter: Becht, E., Giraldo, N.A., Lacroix, L. et al. ", tags$a(href="https://doi.org/10.1186/s13059-016-1070-5","Estimating the population abundance of tissue-infiltrating immune and stromal cell populations using gene expression."),"Genome Biol 17, 218 (2016)."),
+           tags$br(),
+           tags$p("For the murine mMCP-counter: Petitprez, F., Lévy, S., Sun, C.-M., Meylan, M. et al. ", tags$a(href="https://doi.org/10.1101/2020.03.10.985176", "The murine Microenvironment Cell Population counter method to estimate abundance of tissue-infiltrating immune and stromal cell populations in murine samples using gene expression."), "bioRXiv (2020)")
+           
+           )
   
 )
 
