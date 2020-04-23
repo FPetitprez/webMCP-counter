@@ -107,7 +107,7 @@ ui <- navbarPage(title = "webMCP",
            tags$p("For the murine mMCP-counter: Petitprez, F., Lévy, S., Sun, C.-M., Meylan, M. et al. ", tags$a(href="https://doi.org/10.1101/2020.03.10.985176", "The murine Microenvironment Cell Population counter method to estimate abundance of tissue-infiltrating immune and stromal cell populations in murine samples using gene expression."), "bioRXiv (2020)"),
            tags$br(),
            tags$br(),
-           tags$p(style="color:grey","webMCP was developped by",tags$a(href="https://florentpetitprez.netlify.app/","Florent Petitprez")),
+           tags$p(style="color:grey","webMCP was developped by",tags$a(href="https://florentpetitprez.netlify.app/","Florent Petitprez"),"and Maxime Meylan (parce que bien sur que tu vas y participer, je t'aurai ;) )"),
            
            
            
