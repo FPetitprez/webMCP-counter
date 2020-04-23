@@ -6,6 +6,9 @@ library(ComplexHeatmap)
 library(dendextend)
 library(circlize)
 
+#gep <- read.table("~/Documents/Ligue/Shiny MCP-counter/20200421_humanTestData.csv",sep=";",header = TRUE, row.names = 1,stringsAsFactors = FALSE, check.names = FALSE)
+#estimates <- list(est = NULL, version = "h")
+
 # set max upload size to 50Mb
 options(shiny.maxRequestSize=50*1024^2)
 
@@ -80,7 +83,9 @@ ui <- navbarPage(title = "webMCP",
              
               mainPanel(
                 
-                plotOutput("heatmap")
+                plotOutput("heatmap"),
+                
+                plotOutput("MCPboxplots")
                 
               )
              
@@ -203,8 +208,8 @@ server <- function(input, output) {
   # Tab 2: clustering analysis #
   ##############################
   
-  clusterColorCode = c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00","#ffff33","#a65628","#f781bf","#999999","#8dd3c7")
-  
+  clusterColorCode <- c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00","#ffff33","#a65628","#f781bf","#999999","#8dd3c7")
+  names(clusterColorCode) <- paste("Cluster",1:10)
   
   # wait for the run button to be clicked
   observeEvent(input$runClustering,{
@@ -214,7 +219,7 @@ server <- function(input, output) {
       
       # scale estimates for the heatmap
       est.norm <- t(apply(t(estimates$est),1,scale))
-      colnames(est.norm) = row.names(estimates$est)
+      colnames(est.norm) <- row.names(estimates$est)
       
       #dendrograms for the populations (mcp) and for the samples
       dend.mcp <- hclust(dist(est.norm,method = "euclidian"))
@@ -227,6 +232,22 @@ server <- function(input, output) {
       
       # plot the heatmap
       output$heatmap <- renderPlot(draw(hm))
+      
+      # get clusters
+      clusters <- paste("Cluster",match(get_leaves_attr(dend.samples,"edgePar"),clusterColorCode))
+      clusters_n <- paste(clusters,"\n(n=",table(clusters)[clusters],")",sep="")
+      names(clusters_n) <- labels(dend.samples)
+      clusters_n <- clusters_n[rownames(estimates$est)]
+      
+      
+      output$MCPboxplots <- renderPlot({
+        par(mfrow = c(1,2))
+        boxplot(estimates$est[,"T cells"]~clusters_n,xlab = "", ylab = "T cells", border = clusterColorCode,outline=FALSE, las=2)
+        stripchart(estimates$est[,"T cells"]~clusters_n,vertical = TRUE, add=TRUE, method = "jitter",pch=16, col = clusterColorCode)
+        boxplot(estimates$est[,"NK cells"]~clusters_n,xlab = "", ylab = "NK cells", border = clusterColorCode,outline=FALSE, las=2)
+        stripchart(estimates$est[,"NK cells"]~clusters_n,vertical = TRUE, add=TRUE, method = "jitter",pch=16, col = clusterColorCode)
+      })
+      
       
     }
     
