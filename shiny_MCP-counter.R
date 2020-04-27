@@ -21,6 +21,8 @@ ui <- navbarPage(title = "webMCP",
   # Several tabs: 1 to run MCP-counter, the others for downstream analyses
   tabPanel("Step 1: run (m)MCP-counter",
            
+           img(src="three_stickers.png", width="100",height="100", align="right"),
+           
            tags$h1("Welcome to webMCP"),
            
            tags$h4("Web app for MCP-counter and mMCP-counter"),
@@ -94,7 +96,26 @@ ui <- navbarPage(title = "webMCP",
   
   
   tabPanel("What is MCP-counter?",
-           "Ongoing. Stay tuned!"),
+           
+           tags$h2("What is MCP-counter"),
+           tags$p("In this setion, we will rapidly describe what MCP-counter is. Do not hesitate to",tags$a(href="mailto:florent.petitprez@ligue-cancer.net","get in touch"),"if you have more questions."),
+           tags$br(),
+           
+           tags$h3("Objective of the method"),
+           tags$p("MCP-counter, and its murine counterpart method mMCP-counter, are deconvolution methods that use transcriptomic data to estimate the relative abundance of diverse immune and stromal population in heterogeneous bulk samples. The following table lists the populations that can be assessed using MCP-counter or mMCP-counter, depending on the organism."),
+           tableOutput("populationsTable"),
+           tags$br(),
+           
+           tags$h3("How does it work?"),
+           tags$br(),
+           
+           tags$h3("How to interpret the scores?"),
+           img(src="compCIBERSORT.png", width = 800),
+           tags$p(style="color:grey","Source: Petitprez et al., Cancer Immunology Immunotherapy, 2017"),
+           
+           
+           
+           ),
   
   
   tabPanel("Citation",
@@ -107,7 +128,7 @@ ui <- navbarPage(title = "webMCP",
            tags$p("For the murine mMCP-counter: Petitprez, F., Lévy, S., Sun, C.-M., Meylan, M. et al. ", tags$a(href="https://doi.org/10.1101/2020.03.10.985176", "The murine Microenvironment Cell Population counter method to estimate abundance of tissue-infiltrating immune and stromal cell populations in murine samples using gene expression."), "bioRXiv (2020)"),
            tags$br(),
            tags$br(),
-           tags$p(style="color:grey","webMCP was developped by",tags$a(href="https://florentpetitprez.netlify.app/","Florent Petitprez"),"and Maxime Meylan (parce que bien sur que tu vas y participer, je t'aurai ;) )"),
+           tags$p(style="color:grey","webMCP was developped by",tags$a(href="https://florentpetitprez.netlify.app/","Florent Petitprez"),"and Maxime Meylan"),
            
            
            
@@ -129,6 +150,10 @@ server <- function(input, output) {
   ##############################
   # Tab 1: Running MCP-counter #
   ##############################
+  
+  ## static table for the "What is MCP-counter tab
+  output$populationsTable <- renderTable(data.frame('MCP-counter (human)' = c("T cells", "CD8+ T cells", "Cytotoxic lymphocytes", "NK cells", "B lineage", "Monocytic lineage", "Myeloid dendritic cells", "Neutrophils", "Endothelial cells", "Fibroblasts","","","","","",""),
+                                                    'mMCP-counter (mouse)' = c("T cells", "CD8+ T cells", "NK cells", "B-derived cells", "Memory B cells", "Monocytes/macrophages", "Monocytes", "Basophils", "Mast cells", "Eosinophils", "Granulocytes", "Neutrophils", "Vessels", "Endothelial cells", "Lymphatics","Fibroblasts"),check.names = FALSE))
   
   
   
