@@ -28,9 +28,10 @@ library(dunn.test)
 
 
 # Florent: local test data 
-gep <- read.table("/Users/meylanmaxime/Documents/85 échantillons Nivoren data RNAseq (1).csv",sep=",",header = TRUE, row.names = 1,stringsAsFactors = FALSE, check.names = FALSE)
-estimates <- list(est = NULL, version = "h")
-  
+#gep <- read.table("~/Documents/Ligue/Shiny MCP-counter/20200421_humanTestData.csv",sep=";",header = TRUE, row.names = 1,stringsAsFactors = FALSE, check.names = FALSE)
+#estimates <- list(est = NULL, version = "h")
+
+
 # set max upload size to 50Mb
 options(shiny.maxRequestSize=50*1024^2)
 
@@ -299,7 +300,7 @@ server <- function(input, output) {
       
       MCPboxplots <- sapply(colnames(estimates$est),function(x) plot_group_boxplot(data.m = melted_est,
                                                                                   variable=x,
-                                                                                  violin = T,
+                                                                                  violin = (min(table(clusters))>2), #get violin plot only if all clusters have at least 3 samples, otherwise it messes with the color code
                                                                                   specify_col =  as.character(clusterColorCode[1:input$nrCluster]),
                                                                                   labs=c("","","") 
                                                                                 ))
@@ -388,6 +389,8 @@ formatDiagnostic <- function(table, version = c("h","m")[1]){
   return(paste("File loaded succesfully and correctly interpreted. ",c("h"="","m"="m")[version],"MCP-counter will be run shortly.",sep=""))
   
 }
+
+# boxplot function with appropriate tests and display of p-values
 plot_group_boxplot <- function(data.m,
                                variable,
                                plot_only_signif=FALSE,
