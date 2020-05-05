@@ -6,6 +6,23 @@ library(ComplexHeatmap)
 library(dendextend)
 library(circlize)
 
+
+######################
+# TO DO
+#
+# - refine format testing function:
+#     - test separator
+#     - ...
+# - Maxime: boxplots & tests in tab 2
+# - Finish "what is MCP-counter" tab
+#
+######################
+
+
+
+
+
+# Florent: local test data 
 #gep <- read.table("~/Documents/Ligue/Shiny MCP-counter/20200421_humanTestData.csv",sep=";",header = TRUE, row.names = 1,stringsAsFactors = FALSE, check.names = FALSE)
 #estimates <- list(est = NULL, version = "h")
 
@@ -21,7 +38,7 @@ ui <- navbarPage(title = "webMCP",
   # Several tabs: 1 to run MCP-counter, the others for downstream analyses
   tabPanel("Step 1: run (m)MCP-counter",
            
-           img(src="three_stickers.png", width="100",height="100", align="right"),
+           img(src="three_stickers.png", width=100,height=100, align="right"),
            
            tags$h1("Welcome to webMCP"),
            
@@ -108,6 +125,8 @@ ui <- navbarPage(title = "webMCP",
            
            tags$h3("How does it work?"),
            tags$br(),
+           tags$p("The global idea of MCP-counter is to seek genes that are expressed in one cell population (and all its sub-populations), and not expressed by all other cell types.",
+                  "These genes are called",tags$i("transcriptomic markers."),"The plot below illustrates the expression pattern of", tags$i("MS4A1"), "(CD20) one such transcriptomic marker for human B lineage cells."),
            
            tags$h3("How to interpret the scores?"),
            img(src="compCIBERSORT.png", width = 800),
