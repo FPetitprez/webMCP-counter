@@ -6,6 +6,11 @@ library(ComplexHeatmap)
 library(dendextend)
 library(circlize)
 
+library(ggplot2)
+library(reshape2)
+library(ggsignif)
+library(gridExtra)
+library(dunn.test)
 
 ######################
 # TO DO
@@ -23,9 +28,9 @@ library(circlize)
 
 
 # Florent: local test data 
-#gep <- read.table("~/Documents/Ligue/Shiny MCP-counter/20200421_humanTestData.csv",sep=";",header = TRUE, row.names = 1,stringsAsFactors = FALSE, check.names = FALSE)
-#estimates <- list(est = NULL, version = "h")
-
+gep <- read.table("/Users/meylanmaxime/Documents/85 échantillons Nivoren data RNAseq (1).csv",sep=",",header = TRUE, row.names = 1,stringsAsFactors = FALSE, check.names = FALSE)
+estimates <- list(est = NULL, version = "h")
+  
 # set max upload size to 50Mb
 options(shiny.maxRequestSize=50*1024^2)
 
@@ -283,14 +288,32 @@ server <- function(input, output) {
       names(clusters_n) <- labels(dend.samples)
       clusters_n <- clusters_n[rownames(estimates$est)]
       
+      # get boxplots 
+      estimates_df <- data.frame(estimates$est,check.names = F)
+      estimates_df$clusters <- clusters_n
+      melted_est <- melt_df(estimates_df,var_to_group = 'clusters')
       
+      # MCPboxplots is a matrix that can be queried like the following
+      # MCPboxplots["plot","T cells"]
+      # MCPboxplots["plot",1:4]
+      
+      MCPboxplots <- sapply(colnames(estimates$est),function(x) plot_group_boxplot(data.m = melted_est,
+                                                                                  variable=x,
+                                                                                  violin = T,
+                                                                                  specify_col =  as.character(clusterColorCode[1:input$nrCluster]),
+                                                                                  labs=c("","","") 
+                                                                                ))
       output$MCPboxplots <- renderPlot({
-        par(mfrow = c(1,2))
-        boxplot(estimates$est[,"T cells"]~clusters_n,xlab = "", ylab = "T cells", border = clusterColorCode,outline=FALSE, las=2)
-        stripchart(estimates$est[,"T cells"]~clusters_n,vertical = TRUE, add=TRUE, method = "jitter",pch=16, col = clusterColorCode)
-        boxplot(estimates$est[,"NK cells"]~clusters_n,xlab = "", ylab = "NK cells", border = clusterColorCode,outline=FALSE, las=2)
-        stripchart(estimates$est[,"NK cells"]~clusters_n,vertical = TRUE, add=TRUE, method = "jitter",pch=16, col = clusterColorCode)
+        grid.arrange(grobs=MCPboxplots["plot",1:3],ncol=3)
       })
+      
+      # output$MCPboxplots <- renderPlot({
+      #   par(mfrow = c(1,2))
+      #   boxplot(estimates$est[,"T cells"]~clusters_n,xlab = "", ylab = "T cells", border = clusterColorCode,outline=FALSE, las=2)
+      #   stripchart(estimates$est[,"T cells"]~clusters_n,vertical = TRUE, add=TRUE, method = "jitter",pch=16, col = clusterColorCode)
+      #   boxplot(estimates$est[,"NK cells"]~clusters_n,xlab = "", ylab = "NK cells", border = clusterColorCode,outline=FALSE, las=2)
+      #   stripchart(estimates$est[,"NK cells"]~clusters_n,vertical = TRUE, add=TRUE, method = "jitter",pch=16, col = clusterColorCode)
+      # })
       
       
     }
@@ -351,7 +374,7 @@ formatDiagnostic <- function(table, version = c("h","m")[1]){
   if(!all(apply(table,2,is.numeric))){return("Non-numeric columns have been detected. Please provide a numeric-only table, with the exception of sample and gene names.")}
   
   # Test if ENSEMBL gene IDs (to be supported in a future version)
-  if(length(grep("ENS",rownames(table))) > 50){return("ENSEMBL gene IDs detected. For now, this program only accepts HUGO Gene Symbols. Please provide the gene names as Gene Symbols. The support for ENSEMBL Gene IDs is planned in a future release.")}
+  #if(length(grep("ENS",rownames(table))) > 50){return("ENSEMBL gene IDs detected. For now, this program only accepts HUGO Gene Symbols. Please provide the gene names as Gene Symbols. The support for ENSEMBL Gene IDs is planned in a future release.")}
   
   # Test if Human of Mouse based on the gene symbol case (Human: ALL CAPITAL, Mouse: First Letter Capital Only).
   firstLetterCapital = sum(toupper(substr(rownames(table),1,1))==substr(rownames(table),1,1))>0.8*nrow(table) # TRUE <=> at least 80% gene names start with capital letter
@@ -365,10 +388,157 @@ formatDiagnostic <- function(table, version = c("h","m")[1]){
   return(paste("File loaded succesfully and correctly interpreted. ",c("h"="","m"="m")[version],"MCP-counter will be run shortly.",sep=""))
   
 }
+plot_group_boxplot <- function(data.m,
+                               variable,
+                               plot_only_signif=FALSE,
+                               pval_thresh=0.05,
+                               specify_col=NA,
+                               palette="YlOrRd",
+                               title="",
+                               title_size=NA,
+                               show_paired=F,
+                               add_jitter=T,
+                               color_points_id=NULL,
+                               log_scale=F,
+                               violin=F,
+                               plot_outlier=T,
+                               compare_groups=T,
+                               add_hline=NA,
+                               hide_test =F,
+                               paired=F,
+                               do_test=T,
+                               ylim=NA,
+                               labs=c("title","value","value")){
+  #initialize variables
+  return_plot <- FALSE
+  dodge <- position_dodge(width=0.9)
+  p <- NULL
+  ylim1 <- NULL
+  row_id <- which(variable == data.m[,"variable"])
+  id_per_group <- lapply(unique(data.m$groups),function(x) which(data.m[row_id,"groups"] == x))
+  names(id_per_group) <- unique(data.m$groups)
+  data_to_sub <- data.m[row_id,]
+  value_per_group <- lapply(id_per_group,function(x) data_to_sub[x,"value"])
+  
+  #Perfom global significance test
+  if(do_test){
+    if(length(value_per_group) == 2 & !paired){
+      test = wilcox.test(value_per_group[[1]],value_per_group[[2]])
+      test_name <- "Mann-Whitney test"
+    }
+    if(length(value_per_group) > 2) {
+      test <- kruskal.test(value_per_group)
+      test_name <-"Kruskal-Wallis test"
+    }
+    if(paired){
+      #add Ids for strips
+      data.m$IDs <- c(id_per_group[[1]],id_per_group[[1]])
+      test = wilcox.test(value_per_group[[1]],value_per_group[[2]],paired=T)
+      test_name <- "Paired Mann-Whitney test"
+    }
+    pval <- test$p.value
+  }else{
+    pval <- 1
+    test_name <- "No test"
+  }
+  
+  if(plot_only_signif & pval <= pval_thresh) return_plot <-  TRUE
+  if(plot_only_signif == FALSE ) return_plot <- TRUE
+  if(return_plot){
+    p <- ggplot(data = data.m[row_id,], aes(x=groups, y=value))
+    p <- p + theme_bw()
+    if(!is.na(title_size)){
+      p <- p +   theme(plot.title = element_text(size = title_size))
+    }
+    if(all(!is.na(ylim))){
+      p <- p + ylim(ylim)
+    }
+    if(any(is.na(specify_col))){
+      p <- p + scale_fill_brewer(palette = palette)
+    }else{
+      p <- p + scale_fill_manual(values = specify_col)
+    }
+    if(violin){
+      p <- p + geom_violin(aes(fill=groups), position = dodge,trim=T) + geom_boxplot(outlier.alpha = 0.003,width=0.1, fill="white")
+    }else{
+      p <- p + geom_boxplot(aes(fill=groups), position = dodge,outlier.shape=NA)
+    }
+    #display strips for paired data
+    if(show_paired){
+      p <- p + geom_line(aes(group=IDs),colour=alpha("grey50", alpha = 0.2),linetype="11")
+      p <- p + geom_point(data=data.m[row_id,],aes(x =groups, y =value),alpha=0.03, colour ="black",show.legend = F)
+    }
+    if(add_jitter){
+      p <- p + geom_jitter(position = position_jitter(width = .05), alpha = 0.4)
+    }
+    if(!(is.na(add_hline))){
+      p <- p + geom_hline(yintercept=add_hline, linetype="dashed", color = "red")
+    }
+    #display pvalue without test name
+    if(hide_test){
+      if(pval < 1e-16){
+        p <- p + labs(subtitle=paste(" p < 10e-16",sep=" "),title=paste(variable,labs[1]),x=labs[2],y=labs[3]) +  guides(fill=FALSE)
+        p <- p + theme(plot.subtitle=element_text(face="bold"))
+      }else{
+        p <- p + labs(subtitle=paste(" p = ",format(pval,digits = 3),sep=" "),title=paste(variable,labs[1]),x=labs[2],y=labs[3]) +  guides(fill=FALSE)
+        if(pval < 0.05 ) p <- p + theme(plot.subtitle=element_text(face="bold"))
+      }
+    #display pvalue and test name
+    }else{
+      if(pval < 1e-16){
+        p <- p + labs(subtitle=paste(test_name, " p < 10e-16",sep=" "),title=paste(variable,labs[1]),x=labs[2],y=labs[3]) +  guides(fill=FALSE)
+        p <- p + theme(plot.subtitle=element_text(face="bold"))
+      }else{
+        p <- p + labs(subtitle=paste(test_name, " p = ",format(pval,digits = 3),sep=" "),title=paste(variable,labs[1]),x=labs[2],y=labs[3]) +  guides(fill=FALSE)
+        if(pval < 0.05 ) p <- p + theme(plot.subtitle=element_text(face="bold"))
+      }
+    }
+    p <- p + theme(plot.subtitle = element_text(size = 9))
+    #color specified points
+    if(!is.null(color_points_id)){
+      p <- p + geom_point(data=data.m[num_ids,],aes(x =groups, y =value, colour ="red"))
+    }
+    if(log_scale){
+      p <- p + scale_y_continuous(trans = "log10",breaks = base_breaks(), labels = prettyNum) + theme(panel.grid.minor = element_blank())
+    }
+    #if plot_outlier set to F, hide bottom 2% and top 5% values
+    if(!plot_outlier){
+      ylim1[1] <- quantile(data.m[row_id,"value"],0.02,na.rm=T)
+      ylim1[2] <- quantile(data.m[row_id,"value"],0.95,na.rm=T)
+      p <- p + coord_cartesian(ylim =ylim1)
+    }
+    #perform dunn.test to evaluate pairwize difference for group combination
+    if(compare_groups & length(value_per_group) > 2){
+      #remove cat from dunn.test
+      dunn_test <- dunn.test(x=data.m[row_id,"value"],g=data.m[row_id,'groups'],method = "bh")
+      comparisons <- sapply(dunn_test$comparisons,function(x) strsplit(x,split =" - "))
+      adjp_dunn <- format(dunn_test$`P.adjusted`,digits = 2)
+      #add custom pvalue to plot
+      p <- p + geom_signif(annotations = adjp_dunn, comparisons = comparisons, step_increase = 0.1)
+      
+      names(adjp_dunn) <- dunn_test$comparisons
+      res <- list(plot=p,main_pval=pval,main_test=test_name,comparisons_pval=adjp_dunn)
+      return(res)
+    }
+  }
+  res <- list(plot=p,main_pval=pval,main_test=test_name)
+  return(res)
+}
 
-
-
-
+#Get nice axis ticks
+#from Heather Turner @stackoverflow
+base_breaks <- function(n = 10){
+  function(x) {
+    axisTicks(log10(range(x, na.rm = TRUE)), log = T, n = n)
+  }
+}
+#Small edit to melt function
+melt_df <- function(df,var_to_group){
+  df.m <- melt(df,id = var_to_group,varnames = c("variable","value"))
+  colnames(df.m)[1] <- "groups"
+  df.m$value <- as.numeric(as.character(df.m$value))
+  return(df.m)
+}
 
 
 
