@@ -15,11 +15,14 @@ library(dunn.test)
 ######################
 # TO DO
 #
+# - Correct bug with missing population
+# - Add download button for clusters info
 # - refine format testing function:
 #     - test separator
 #     - ...
-# - Maxime: boxplots & tests in tab 2
+# - Implement selection of populations to include (heatmap and boxplots)
 # - Finish "what is MCP-counter" tab
+# - Manage ENSEMBL IDs (after initial review of mMCP-counter paper)
 #
 ######################
 
@@ -29,6 +32,7 @@ library(dunn.test)
 
 # Florent: local test data 
 #gep <- read.table("~/Documents/Ligue/Shiny MCP-counter/20200421_humanTestData.csv",sep=";",header = TRUE, row.names = 1,stringsAsFactors = FALSE, check.names = FALSE)
+#gep <- read.table("~/Documents/Ligue/Shiny MCP-counter/AD_norm.txt",sep=",",header = TRUE, row.names = 1,stringsAsFactors = FALSE, check.names = FALSE)
 #estimates <- list(est = NULL, version = "h")
 
 
@@ -96,7 +100,7 @@ ui <- navbarPage(title = "webMCP",
              sidebarPanel(
                
                # Slider for the number of clusters
-               sliderInput("nrCluster",label = "Select number of clusters to display",min = 1, max = 10,value = 3),
+               sliderInput("nrCluster",label = "Select number of clusters to display",min = 2, max = 10,value = 3),
                
                # Action button that runs the clustering analysis
                actionButton("runClustering","Run Clustering Analysis"),
@@ -132,7 +136,11 @@ ui <- navbarPage(title = "webMCP",
            tags$h3("How does it work?"),
            tags$br(),
            tags$p("The global idea of MCP-counter is to seek genes that are expressed in one cell population (and all its sub-populations), and not expressed by all other cell types.",
-                  "These genes are called",tags$i("transcriptomic markers."),"The plot below illustrates the expression pattern of", tags$i("MS4A1"), "(CD20) one such transcriptomic marker for human B lineage cells."),
+                  "These genes are called",tags$i("transcriptomic markers."),"The plot below illustrates the expression pattern of one such transcriptomic marker for murine mast cells."),
+           img(src="mMCPcounter_specificMarker.png", width=1000),
+           tags$p(style="color:grey","Source: Petitprez et al., BioRXiv, 2020"),
+           tags$p("The determination of a gene as a transcriptomic marker is based on three criteria: specific variablility (i.e. overexpression in the population of interest as compared to the expression in all other populations), aspecific variability (i.e. overexpression in the populations of interest as compared with the variability within all other populations), and sensitivity-specificity as measured with the area under the ROC curve."),
+           tags$p("These selection criteria ensure sufficient specificity of the considered gene signatures. Therefore, the expression level of these genes is proportional the the abundance of the designated cell populations in the bulk samples."),
            
            tags$h3("How to interpret the scores?"),
            img(src="compCIBERSORT.png", width = 800),
@@ -176,7 +184,7 @@ server <- function(input, output) {
   # Tab 1: Running MCP-counter #
   ##############################
   
-  ## static table for the "What is MCP-counter tab
+  ## static table for the "What is MCP-counter" tab
   output$populationsTable <- renderTable(data.frame('MCP-counter (human)' = c("T cells", "CD8+ T cells", "Cytotoxic lymphocytes", "NK cells", "B lineage", "Monocytic lineage", "Myeloid dendritic cells", "Neutrophils", "Endothelial cells", "Fibroblasts","","","","","",""),
                                                     'mMCP-counter (mouse)' = c("T cells", "CD8+ T cells", "NK cells", "B-derived cells", "Memory B cells", "Monocytes/macrophages", "Monocytes", "Basophils", "Mast cells", "Eosinophils", "Granulocytes", "Neutrophils", "Vessels", "Endothelial cells", "Lymphatics","Fibroblasts"),check.names = FALSE))
   
@@ -267,9 +275,15 @@ server <- function(input, output) {
     if(is.null(estimates$est)){output$clusteringMessage <- "The MCP-counter estimates could not be found. Please ensure to first run the analysis of step 1."}
     else{
       
+      
+      
       # scale estimates for the heatmap
       est.norm <- t(apply(t(estimates$est),1,scale))
       colnames(est.norm) <- row.names(estimates$est)
+      
+      # rows with sd=0 are set to NAs by the scale function. This chunk sets them to 0.
+      est.norm[is.na(est.norm[,1]),] <- 0
+      
       
       #dendrograms for the populations (mcp) and for the samples
       dend.mcp <- hclust(dist(est.norm,method = "euclidian"))
@@ -300,10 +314,12 @@ server <- function(input, output) {
       
       MCPboxplots <- sapply(colnames(estimates$est),function(x) plot_group_boxplot(data.m = melted_est,
                                                                                   variable=x,
-                                                                                  violin = (min(table(clusters))>2), #get violin plot only if all clusters have at least 3 samples, otherwise it messes with the color code
+                                                                                  violin = (min(table(clusters))>2), #get violin plot only if all clusters have at least 3 samples, otherwise it messes with the color code. If one cluster has 2 or less samples, simply plot boxplot
                                                                                   specify_col =  as.character(clusterColorCode[1:input$nrCluster]),
                                                                                   labs=c("","","") 
                                                                                 ))
+      
+      
       output$MCPboxplots <- renderPlot({
         grid.arrange(grobs=MCPboxplots["plot",1:3],ncol=3)
       })
@@ -439,7 +455,7 @@ plot_group_boxplot <- function(data.m,
       test = wilcox.test(value_per_group[[1]],value_per_group[[2]],paired=T)
       test_name <- "Paired Mann-Whitney test"
     }
-    pval <- test$p.value
+    pval <- ifelse(is.na(test$p.value),1,test$p.value)
   }else{
     pval <- 1
     test_name <- "No test"
@@ -511,7 +527,7 @@ plot_group_boxplot <- function(data.m,
       p <- p + coord_cartesian(ylim =ylim1)
     }
     #perform dunn.test to evaluate pairwize difference for group combination
-    if(compare_groups & length(value_per_group) > 2){
+    if(compare_groups & length(value_per_group) > 2 & sd(unlist(value_per_group))>0){
       #remove cat from dunn.test
       dunn_test <- dunn.test(x=data.m[row_id,"value"],g=data.m[row_id,'groups'],method = "bh")
       comparisons <- sapply(dunn_test$comparisons,function(x) strsplit(x,split =" - "))
