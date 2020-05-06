@@ -34,7 +34,9 @@ library(dunn.test)
 #gep <- read.table("~/Documents/Ligue/Shiny MCP-counter/20200421_humanTestData.csv",sep=";",header = TRUE, row.names = 1,stringsAsFactors = FALSE, check.names = FALSE)
 #gep <- read.table("~/Documents/Ligue/Shiny MCP-counter/AD_norm.txt",sep=",",header = TRUE, row.names = 1,stringsAsFactors = FALSE, check.names = FALSE)
 #estimates <- list(est = NULL, version = "h")
-
+# Maxime : same
+#gep <- read.csv("/Users/meylanmaxime/Documents/85 échantillons Nivoren data RNAseq (1).csv",sep=",",header = TRUE, row.names = 1,stringsAsFactors = FALSE, check.names = FALSE)
+#estimates <- list(est = NULL, version = "h")
 
 # set max upload size to 50Mb
 options(shiny.maxRequestSize=50*1024^2)
@@ -316,9 +318,8 @@ server <- function(input, output) {
                                                                                   variable=x,
                                                                                   violin = (min(table(clusters))>2), #get violin plot only if all clusters have at least 3 samples, otherwise it messes with the color code. If one cluster has 2 or less samples, simply plot boxplot
                                                                                   specify_col =  as.character(clusterColorCode[1:input$nrCluster]),
-                                                                                  labs=c("","","") 
+                                                                                  labs=c("","","MCP score") 
                                                                                 ))
-      
       
       output$MCPboxplots <- renderPlot({
         grid.arrange(grobs=MCPboxplots["plot",1:3],ncol=3)
@@ -440,7 +441,7 @@ plot_group_boxplot <- function(data.m,
   value_per_group <- lapply(id_per_group,function(x) data_to_sub[x,"value"])
   
   #Perfom global significance test
-  if(do_test){
+  if(do_test){class
     if(length(value_per_group) == 2 & !paired){
       test = wilcox.test(value_per_group[[1]],value_per_group[[2]])
       test_name <- "Mann-Whitney test"
@@ -531,16 +532,16 @@ plot_group_boxplot <- function(data.m,
       #remove cat from dunn.test
       dunn_test <- dunn.test(x=data.m[row_id,"value"],g=data.m[row_id,'groups'],method = "bh")
       comparisons <- sapply(dunn_test$comparisons,function(x) strsplit(x,split =" - "))
-      adjp_dunn <- format(dunn_test$`P.adjusted`,digits = 2)
-      #add custom pvalue to plot
-      p <- p + geom_signif(annotations = adjp_dunn, comparisons = comparisons, step_increase = 0.1)
+      adjp_dunn <- format(dunn_test$`P.adjusted`,digits = 2,trim = T)
+      to_bold <- ifelse(as.numeric(adjp_dunn) < 0.05, paste( "bold('" , adjp_dunn,"')"),adjp_dunn)
+      p <- p + geom_signif(annotations = to_bold,parse = T, comparisons = comparisons, step_increase = 0.1)
       
       names(adjp_dunn) <- dunn_test$comparisons
       res <- list(plot=p,main_pval=pval,main_test=test_name,comparisons_pval=adjp_dunn)
       return(res)
     }
   }
-  res <- list(plot=p,main_pval=pval,main_test=test_name)
+  res <- list(plot=p,main_pval=pval,main_test=test_name,comparisons_pval=NA)
   return(res)
 }
 
