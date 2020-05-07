@@ -5,7 +5,6 @@ library(DT)
 library(ComplexHeatmap)
 library(dendextend)
 library(circlize)
-
 library(ggplot2)
 library(reshape2)
 library(ggsignif)
@@ -15,8 +14,7 @@ library(dunn.test)
 ######################
 # TO DO
 #
-# - Correct bug with missing population
-# - Add download button for clusters info
+# - Add warning for missing populations
 # - refine format testing function:
 #     - test separator
 #     - ...
@@ -83,7 +81,6 @@ ui <- navbarPage(title = "webMCP",
                
                ## conditional output for the download button
                uiOutput("downloadButton"),
-               #downloadButton(outputId = "downloadEstimates",label = "Download (m)MCP-counter estimates"),
                
                ## output: table of estimates
                dataTableOutput(outputId = "estimatesTable")
@@ -104,8 +101,14 @@ ui <- navbarPage(title = "webMCP",
                # Slider for the number of clusters
                sliderInput("nrCluster",label = "Select number of clusters to display",min = 2, max = 10,value = 3),
                
+               # Check boxes for choice of populations to include
+               uiOutput("popCheckBoxes"),
+               
+               # All/non checkbox
+               checkboxInput("allNonePop","All/None selected",value=TRUE),
+               
                # Action button that runs the clustering analysis
-               actionButton("runClustering","Run Clustering Analysis"),
+               actionButton("runClustering","Update"),
                
                # Text output to print any necessary messages
                textOutput("clusteringMessage")
@@ -115,6 +118,11 @@ ui <- navbarPage(title = "webMCP",
               mainPanel(
                 
                 plotOutput("heatmap"),
+                
+                ## conditional output for the download button
+                uiOutput("downloadClustersButton"),
+                
+                
                 
                 plotOutput("MCPboxplots")
                 
@@ -271,17 +279,30 @@ server <- function(input, output) {
   clusterColorCode <- c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00","#ffff33","#a65628","#f781bf","#999999","#8dd3c7")
   names(clusterColorCode) <- paste("Cluster",1:10)
   
+  #initialize variables
+  clusters <- NULL
+  populationsToUse <- reactiveValues(populations = NULL)
+  
+  
+  output$popCheckBoxes <- renderUI(checkboxGroupInput("popChoice",label = "Check populations to be included in the analysis",
+                                                      choices=colnames(estimates$est),selected = if(input$allNonePop)colnames(estimates$est)))
+  
+  
   # wait for the run button to be clicked
   observeEvent(input$runClustering,{
+    
+    
     
     if(is.null(estimates$est)){output$clusteringMessage <- "The MCP-counter estimates could not be found. Please ensure to first run the analysis of step 1."}
     else{
       
+      populationsToUse$populations <- input$popChoice
       
+      print(populationsToUse)
       
       # scale estimates for the heatmap
-      est.norm <- t(apply(t(estimates$est),1,scale))
-      colnames(est.norm) <- row.names(estimates$est)
+      est.norm <- t(apply(t(estimates$est[,populationsToUse$populations]),1,scale))
+      colnames(est.norm) <- row.names(estimates$est[,populationsToUse$populations])
       
       # rows with sd=0 are set to NAs by the scale function. This chunk sets them to 0.
       est.norm[is.na(est.norm[,1]),] <- 0
@@ -305,8 +326,19 @@ server <- function(input, output) {
       names(clusters_n) <- labels(dend.samples)
       clusters_n <- clusters_n[rownames(estimates$est)]
       
+      # Get download button
+      output$downloadClustersButton <- renderUI(downloadButton(outputId = "downloadClusters",label ="Download clusters information"))
+      
+      # handling the download output button action
+      output$downloadClusters <- downloadHandler(filename = function(){"MCP-counterClusters.tsv"},
+                                                  content = function(file){
+                                                    write.table(data.frame(ID = colnames(est.norm),cluster = clusters),file,row.names=FALSE,col.names=TRUE, sep = "\t")
+                                                  })
+      
+      
+      
       # get boxplots 
-      estimates_df <- data.frame(estimates$est,check.names = F)
+      estimates_df <- data.frame(estimates$est[,populationsToUse$populations],check.names = F)
       estimates_df$clusters <- clusters_n
       melted_est <- melt_df(estimates_df,var_to_group = 'clusters')
       
@@ -314,7 +346,7 @@ server <- function(input, output) {
       # MCPboxplots["plot","T cells"]
       # MCPboxplots["plot",1:4]
       
-      MCPboxplots <- sapply(colnames(estimates$est),function(x) plot_group_boxplot(data.m = melted_est,
+      MCPboxplots <- sapply(colnames(estimates$est[,populationsToUse$populations]),function(x) plot_group_boxplot(data.m = melted_est,
                                                                                   variable=x,
                                                                                   violin = (min(table(clusters))>2), #get violin plot only if all clusters have at least 3 samples, otherwise it messes with the color code. If one cluster has 2 or less samples, simply plot boxplot
                                                                                   specify_col =  as.character(clusterColorCode[1:input$nrCluster]),
@@ -401,7 +433,6 @@ formatDiagnostic <- function(table, version = c("h","m")[1]){
   secondLetterCapital = sum(toupper(substr(rownames(table),2,2))==substr(rownames(table),2,2))>0.8*nrow(table) # TRUE <=> at least 80% gene names have a 2nd capital letter
   if(version=="h" & !(allCapital)){return("Gene symbols provided do not fit the human nomenclature. Please check the organism setting or provide human gene symbols.")}
   if(version=="m" & secondLetterCapital){return("Gene symbols provided do not fit the murine nomenclature. Please check the organism setting or provide murine gene symbols.")}
-  
   
   return(paste("File loaded succesfully and correctly interpreted. ",c("h"="","m"="m")[version],"MCP-counter will be run shortly.",sep=""))
   
