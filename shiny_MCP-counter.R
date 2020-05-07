@@ -14,7 +14,6 @@ library(dunn.test)
 ######################
 # TO DO
 #
-# - Add warning for missing populations
 # - Have all plots below heatmap
 # - refine format testing function:
 #     - test separator
@@ -382,8 +381,8 @@ server <- function(input, output) {
                                                                                 ))
       
       output$MCPboxplots <- renderPlot({
-        grid.arrange(grobs=MCPboxplots["plot",1:3],ncol=3)
-      })
+        grid.arrange(grobs=MCPboxplots["plot",1:ncol(MCPboxplots)],ncol=3)
+      },height = 350*((ncol(MCPboxplots)%/%3)+ifelse(ncol(MCPboxplots)%%3==0,0,1)))
       
       # output$MCPboxplots <- renderPlot({
       #   par(mfrow = c(1,2))
