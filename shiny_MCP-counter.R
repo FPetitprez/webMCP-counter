@@ -15,10 +15,10 @@ library(dunn.test)
 # TO DO
 #
 # - Add warning for missing populations
+# - Have all plots below heatmap
 # - refine format testing function:
 #     - test separator
 #     - ...
-# - Implement selection of populations to include (heatmap and boxplots)
 # - Finish "what is MCP-counter" tab
 # - Manage ENSEMBL IDs (after initial review of mMCP-counter paper)
 #
@@ -44,9 +44,29 @@ options(java.parameters = "-Xmx2048m")
 
 # user interface: specify all input and output that are present in the app
 ui <- navbarPage(title = "webMCP",
-  
+                 
+                 
   # Several tabs: 1 to run MCP-counter, the others for downstream analyses
   tabPanel("Step 1: run (m)MCP-counter",
+           
+           
+           
+           # Modify CSS style for position of Notification             
+           tags$head(
+             tags$style(
+               HTML(".shiny-notification {
+             position:fixed;
+             top: calc(50%);
+             left: calc(50%);
+             }
+             "
+               )
+             )
+           ),
+           
+           
+           
+           
            
            img(src="three_stickers.png", width=100,height=100, align="right"),
            
@@ -238,10 +258,18 @@ server <- function(input, output) {
         
         # run the appropriate version of MCP-counter depending on the organism 
         if(estimates$version=="h"){
-          estimates$est <- t(data.frame(MCPcounter.estimate(gep,featuresType = "HUGO_symbols"),check.names = FALSE))
+          MCPcountercall <- catchToList(MCPcounter.estimate(gep,featuresType = "HUGO_symbols"))
+          estimates$est <- t(data.frame(MCPcountercall$value,check.names = FALSE))
+          if(!is.null(MCPcountercall$warnings)){
+            showNotification(MCPcountercall$warnings[1],type="error",duration = NULL)
+          }
         }
         else{
-          estimates$est <- t(mMCPcounter.estimate(gep))
+          MCPcountercall <- catchToList(mMCPcounter.estimate(gep))
+          estimates$est <- t(MCPcountercall$value)
+          if(!is.null(MCPcountercall$warnings)){
+            showNotification(MCPcountercall$warnings[1],type="error",duration = NULL)
+          }
         }
         
       }
@@ -591,6 +619,23 @@ melt_df <- function(df,var_to_group){
   return(df.m)
 }
 
+# Function that allows to catch both value of expression and any warnings or errors
+# from user "Aaron left Stack Overflow" @stackoverflow
+catchToList <- function(expr) {
+  val <- NULL
+  myWarnings <- NULL
+  wHandler <- function(w) {
+    myWarnings <<- c(myWarnings, w$message)
+    invokeRestart("muffleWarning")
+  }
+  myError <- NULL
+  eHandler <- function(e) {
+    myError <<- e$message
+    NULL
+  }
+  val <- tryCatch(withCallingHandlers(expr, warning = wHandler), error = eHandler)
+  list(value = val, warnings = myWarnings, error=myError)
+} 
 
 
 
