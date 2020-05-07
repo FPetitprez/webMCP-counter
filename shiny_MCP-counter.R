@@ -14,11 +14,9 @@ library(dunn.test)
 ######################
 # TO DO
 #
-# - Have all plots below heatmap
 # - refine format testing function:
 #     - test separator
 #     - ...
-# - Finish "what is MCP-counter" tab
 # - Manage ENSEMBL IDs (after initial review of mMCP-counter paper)
 #
 ######################
@@ -163,15 +161,16 @@ ui <- navbarPage(title = "webMCP",
            tags$br(),
            
            tags$h3("How does it work?"),
-           tags$br(),
            tags$p("The global idea of MCP-counter is to seek genes that are expressed in one cell population (and all its sub-populations), and not expressed by all other cell types.",
                   "These genes are called",tags$i("transcriptomic markers."),"The plot below illustrates the expression pattern of one such transcriptomic marker for murine mast cells."),
            img(src="mMCPcounter_specificMarker.png", width=1000),
            tags$p(style="color:grey","Source: Petitprez et al., BioRXiv, 2020"),
-           tags$p("The determination of a gene as a transcriptomic marker is based on three criteria: specific variablility (i.e. overexpression in the population of interest as compared to the expression in all other populations), aspecific variability (i.e. overexpression in the populations of interest as compared with the variability within all other populations), and sensitivity-specificity as measured with the area under the ROC curve."),
-           tags$p("These selection criteria ensure sufficient specificity of the considered gene signatures. Therefore, the expression level of these genes is proportional the the abundance of the designated cell populations in the bulk samples."),
+           tags$p("The determination of a gene as a transcriptomic marker is based on three criteria: specific variablility (i.e. overexpression in the population of interest as compared to the expression in all other populations), aspecific variability (i.e. overexpression in the populations of interest as compared with the variability within all other populations), and sensitivity-specificity as measured with the area under the ROC curve. These selection criteria ensure sufficient specificity of the considered gene signatures. Therefore, the expression level of these genes is proportional the the abundance of the designated cell populations in the bulk samples."),
+           tags$br(),
            
            tags$h3("How to interpret the scores?"),
+           tags$p("The scores returned by MCP-counter or mMCP-counter are expressed in arbitrary units. These scores are proportional to the amount of the estimated cell populations in the sample. Each population having a different arbitrary unit. Therefore, it cannot be used to compare the abundance of different populations within one sample. However, these scores allow the comparison of the abundance of one cell population between samples in a cohort. This is a fundamental difference with other deconvolution method such as CIBERSORT whichestimate the relative composition within the overall immune infiltrate, and therefore allow to compare between populations within a sample, but not between samples. For more details about these difference and a benchmark of different deconvolution methods to estimate immune and stromal sample compisiton, you can refer to",tags$a(href="https://doi.org/10.1093/bioinformatics/btz363", "Sturm et al., Bioinformatics, 2019")),
+           tags$p("The plot below illustrates this fundamental difference of approach. The left anel is a schematic representation of three possible cell mixtures, while the middle and right panels represent, respectively, the estimates that would be suggested by CIBERSORT and MCP-counter. We notice that the estimates of CIBERSORT for the first two mixes are similar, as they are expressed as percentages of cells among the screened populations only, regardless of the total infiltration in the sample. Conversely, MCP-counter scores are proportional to the amount of each cell population in the total sample, which allows inter-sample comparison for each population. However, these scores are expressed in a different arbitrary unit for each population, which prevents intra-sample comparison between populations. CIBERSORT allows this type of comparison"),
            img(src="compCIBERSORT.png", width = 800),
            tags$p(style="color:grey","Source: Petitprez et al., Cancer Immunology Immunotherapy, 2017"),
            
