@@ -489,7 +489,7 @@ plot_group_boxplot <- function(data.m,
       p <- p + geom_point(data=data.m[row_id,],aes(x =groups, y =value),alpha=0.03, colour ="black",show.legend = F)
     }
     if(add_jitter){
-      p <- p + geom_jitter(position = position_jitter(width = .05), alpha = 0.4)
+      p <- p + geom_jitter(position = position_jitter(width = .05, height = 0), alpha = 0.4)
     }
     if(!(is.na(add_hline))){
       p <- p + geom_hline(yintercept=add_hline, linetype="dashed", color = "red")
