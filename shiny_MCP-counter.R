@@ -179,6 +179,27 @@ ui <- navbarPage(title = "webMCP",
            ),
   
   
+  tabPanel("How to run webMCP",
+           
+           tags$h2("Prepare and load gene expression data"),
+           tags$p("To run MCP-counter or mMCP-counter using this web interface, you forst need to prepare your data in a suitable format. 4 formats are accepted: Excel spreadsheet or text-based with tab, comma or semi-colon separator. Text-format are preferred as they are more memory-efficient. In all cases, the samples must be put in columns, and genes in rows. The first column must imperatively be composed of gene symbols (ENSEMBL IDs are not yet supported). The first line must be composed of the corresponding sample IDs, and the cell above gene symbols must be filled for Escel spreadsheet format."),
+           tags$p("Once your data is ready in a correct format, you can upload it using the upload button on the step 1 tab. Then you need to specify the format you have chosen (Excel spreadsheet or text file, in this case you need to specify the separator) and the organism of origin (human or mouse). Then simply click the `run (m)MCP-counter` button."),
+           tags$p("In case the file format is not correct, a text will appear below the button telling you what went wrong. If evereything is correct, MCP-counter will be run on your data."),
+           tags$br(),
+           
+           tags$h2("Obtain the (m)MCP-counter scores"),
+           tags$p("Once MCP-counter is run, a table will appear on the right side of the step 1 tab. You can browse through it manually or use the search bar to find something of interest to you. A download button will also be available to download the full table. The download will be a .txt file, with columns seprated by tabulations. This file format can be loaded and read with Microsoft Excel or LibreOffice Calc for instance."),
+           tags$br(),
+           
+           tags$h2("Downstream analysis"),
+           tags$p("After you have run (m)MCP-counter on your data, you can use the step 2 tab to conduct basic donstream analysis. In this tab, you will be able to plot a heatmap representing the scores on your data for the populations that are of interest to you. You will also be able to cluster your samples in as many groups as you wish (between 2 and 10), and visualize the differences between cell types abundances between the clusters."),
+           tags$p("To run this downstream analysis, specify the number of clusters you want, and select the populations you wish to be used for the clustering. Then click the `update` button. A heatmap appears on the right, representing normalized MCP-counter scores of the requested populations on your samples. The dendrogram (classification tree) above the heatmap is colored according to the clusters. Below the heatmap, violin plots or boxplots (if one cluster has 2 or less samples) are displayed for all requested populations, showing the differences between the clusters. Kruskal-Wallis tests, and pairwise comparisons using Dunn test are also performed to estimate significance of the inter-cluster differences. A download button also offers you to obtain the cluster to which all your samples belong."),
+           tags$p("If you wish to modify the number of clusters and/or the included populations, simply adapt the settings on the left panel and click on the update button.")
+    
+    
+  ),
+  
+  
   tabPanel("Citation",
            
            tags$p("If you use webMCP in a scientific publication, please cite the original article of the MCP-counter version you used (human or mouse), as well as:"),
