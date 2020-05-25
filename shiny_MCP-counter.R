@@ -78,6 +78,9 @@ ui <- navbarPage(title = "webMCP",
                
                ## file input: user-supplied gene expression profiles
                fileInput(inputId = "geneExpressionProfiles",label = "Upload gene expression profiles file",accept = c("xlsx","txt","csv")),
+               tags$p("or, alternatively,"),
+               checkboxInput("TCGA_SARC","try with the TCGA SARC example data:"),
+               tags$br(),
                
                ## file type select box: specifies the file type (xlsx or text format, in this case also specifies the separator)
                selectInput(inputId = "fileType",label = "Select the file format",choices = c("xlsx","tab-separated text file (txt, tsv, csv)","comma-separated text file (txt, tsv, csv)","semi-colon-separated text file (txt, tsv, csv)")),
@@ -184,7 +187,8 @@ ui <- navbarPage(title = "webMCP",
            tags$h2("Prepare and load gene expression data"),
            tags$p("To run MCP-counter or mMCP-counter using this web interface, you forst need to prepare your data in a suitable format. 4 formats are accepted: Excel spreadsheet or text-based with tab, comma or semi-colon separator. Text-format are preferred as they are more memory-efficient. In all cases, the samples must be put in columns, and genes in rows. The first column must imperatively be composed of gene symbols (ENSEMBL IDs are not yet supported). The first line must be composed of the corresponding sample IDs, and the cell above gene symbols must be filled for Escel spreadsheet format."),
            tags$p("Once your data is ready in a correct format, you can upload it using the upload button on the step 1 tab. Then you need to specify the format you have chosen (Excel spreadsheet or text file, in this case you need to specify the separator) and the organism of origin (human or mouse). Then simply click the `run (m)MCP-counter` button."),
-           tags$p("In case the file format is not correct, a text will appear below the button telling you what went wrong. If evereything is correct, MCP-counter will be run on your data."),
+           tags$p("In case the file format is not correct, a text will appear below the button telling you what went wrong. If everything is correct, MCP-counter will be run on your data."),
+           tags$p("Alternatively, if you simply wish to see what webMCP can do, you can select the TCGA SARC (Soft-tissue Sarcoma from The Cancer Genome Atlas project) dataset that is provided as an example. Simply tick the box and the run button. All parameters will be automatically set and MCP-counter will be run on the TCGA SARC dataset."),
            tags$br(),
            
            tags$h2("Obtain the (m)MCP-counter scores"),
@@ -245,6 +249,16 @@ server <- function(input, output) {
   # code to be run when the user clicks the "run (m)MCP-counter" button: read file path, determine format to read data, and run the appopriate version of MCP-counter depending on organism.
   observeEvent(input$runButton,{
     
+    if(input$TCGA_SARC){ #user chose the example dataset
+      
+      estimates$version <- "h"
+      gep <- cit.load("TCGA_SARC.RData")
+      estimates$est <- t(data.frame(MCPcounter.estimate(gep,featuresType = "HUGO_symbols"),check.names = FALSE))
+      
+    }
+    
+    else{
+      
     # get (tmp) path to user-provided file
     userFile <- (input$geneExpressionProfiles)$datapath
     
@@ -299,7 +313,10 @@ server <- function(input, output) {
     }
     
    
-  })
+  }
+  }
+  
+  )
   
   
   output$downloadButton <- renderUI({
@@ -655,6 +672,15 @@ catchToList <- function(expr) {
   val <- tryCatch(withCallingHandlers(expr, warning = wHandler), error = eHandler)
   list(value = val, warnings = myWarnings, error=myError)
 } 
+
+cit.load <- function (filename) 
+{
+  if (file.exists(filename)) 
+    return(eval(parse(text = load(filename))))
+  cat(paste("error - function cit.load : file ", filename, 
+            " doesn't exist\n"))
+  NULL
+}
 
 
 
