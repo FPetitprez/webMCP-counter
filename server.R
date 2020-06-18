@@ -333,14 +333,14 @@ function(input, output) {
           
           # run the appropriate version of MCP-counter depending on the organism 
           if(estimates$version=="h"){
-            MCPcountercall <- catchToList(MCPcounter.estimate(gep,featuresType = "HUGO_symbols"))
+            MCPcountercall <- catchToList(MCPcounter.estimate(gep,featuresType = ifelse(input$geneIDs=="Gene symbol","HUGO_symbols","ENSEMBL_ID")))
             estimates$est <- t(data.frame(MCPcountercall$value,check.names = FALSE))
             if(!is.null(MCPcountercall$warnings)){
               showNotification(MCPcountercall$warnings[1],type="error",duration = NULL)
             }
           }
           else{
-            MCPcountercall <- catchToList(mMCPcounter.estimate(gep))
+            MCPcountercall <- catchToList(mMCPcounter.estimate(gep,features = ifelse(input$geneIDs=="Gene symbol","Gene.Symbol","ENSEMBL.ID")))
             estimates$est <- t(MCPcountercall$value)
             if(!is.null(MCPcountercall$warnings)){
               showNotification(MCPcountercall$warnings[1],type="error",duration = NULL)
