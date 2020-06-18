@@ -57,6 +57,9 @@ ui <- navbarPage(title = "webMCP",
                               ## file type select box: specifies the file type (xlsx or text format, in this case also specifies the separator)
                               selectInput(inputId = "fileType",label = "Select the file format",choices = c("xlsx","tab-separated text file (txt, tsv, csv)","comma-separated text file (txt, tsv, csv)","semi-colon-separated text file (txt, tsv, csv)")),
                               
+                              ## radio buttons for the gene IDs
+                              radioButtons(inputId = "geneIDs",label = "Select gene ID format", choices = c("Gene symbol","ENSEMBL")),
+                              
                               ## radio buttons for the organism
                               radioButtons(inputId = "organism",label = "Select organism", choices = c("Human (Homo sapiens)","Mouse (Mus musculus)")),
                               
