@@ -47,7 +47,7 @@ formatFits <- function(filePath,fileFormat){
 
 
 # formatDiagnostic tests whether the table provided by the user fits the format required and returns a char that states if the format is correct or how to correct it.
-formatDiagnostic <- function(table, version = c("h","m")[1]){
+formatDiagnostic <- function(table, version = c("h","m")[1],geneIDs){
   
   # Test that table is not NULL
   if(is.null(table)){return("The file you provided could not be interpreted as a table. Please try again with an other file.")}
@@ -61,13 +61,31 @@ formatDiagnostic <- function(table, version = c("h","m")[1]){
   # Test if ENSEMBL gene IDs (to be supported in a future version)
   #if(length(grep("ENS",rownames(table))) > 50){return("ENSEMBL gene IDs detected. For now, this program only accepts HUGO Gene Symbols. Please provide the gene names as Gene Symbols. The support for ENSEMBL Gene IDs is planned in a future release.")}
   
-  # Test if Human of Mouse based on the gene symbol case (Human: ALL CAPITAL, Mouse: First Letter Capital Only).
-  firstLetterCapital = sum(toupper(substr(rownames(table),1,1))==substr(rownames(table),1,1))>0.8*nrow(table) # TRUE <=> at least 80% gene names start with capital letter
-  if(!firstLetterCapital){return("Gene symbols have not been recognized. Please provide only human or murine data with genes identified through their Gene Symbols.")}
-  allCapital = sum(toupper(rownames(table))==rownames(table))>0.8*nrow(table) # TRUE <=> at least 80% gene names are in full capital
-  secondLetterCapital = sum(toupper(substr(rownames(table),2,2))==substr(rownames(table),2,2))>0.8*nrow(table) # TRUE <=> at least 80% gene names have a 2nd capital letter
-  if(version=="h" & !(allCapital)){return("Gene symbols provided do not fit the human nomenclature. Please check the organism setting or provide human gene symbols.")}
-  if(version=="m" & secondLetterCapital){return("Gene symbols provided do not fit the murine nomenclature. Please check the organism setting or provide murine gene symbols.")}
+  if(geneIDs=="Gene symbol"){
+    
+    # Test if Human of Mouse based on the gene symbol case (Human: ALL CAPITAL, Mouse: First Letter Capital Only).
+    firstLetterCapital = sum(toupper(substr(rownames(table),1,1))==substr(rownames(table),1,1))>0.8*nrow(table) # TRUE <=> at least 80% gene names start with capital letter
+    if(!firstLetterCapital){return("Gene symbols have not been recognized. Please provide only human or murine data with genes identified through their Gene Symbols or check to gene ID setting.")}
+    allCapital = sum(toupper(rownames(table))==rownames(table))>0.8*nrow(table) # TRUE <=> at least 80% gene names are in full capital
+    secondLetterCapital = sum(toupper(substr(rownames(table),2,2))==substr(rownames(table),2,2))>0.8*nrow(table) # TRUE <=> at least 80% gene names have a 2nd capital letter
+    if(version=="h" & !(allCapital)){return("Gene symbols provided do not fit the human nomenclature. Please check the organism and gene ID settings or provide human gene symbols.")}
+    if(version=="m" & secondLetterCapital){return("Gene symbols provided do not fit the murine nomenclature. Please check the organism and gene ID settings or provide murine gene symbols.")}
+    
+  }
+  
+  if(geneIDs=="ENSEMBL"){
+    
+    if(version == "m"){
+      if(sum(substr(rownames(table),1,7)=="ENSMUSG")<0.5*nrow(table)){return("ENSEMBL IDs provided are mainly non murine gene IDs. Please verify the organism and gene ID settings.")} # less than 60% of IDs are not ENSEMBL murine gene IDs
+    }
+    
+    if(version == "h"){
+      if(sum(substr(rownames(table),1,4)=="ENSG")<0.5*nrow(table)){return("ENSEMBL IDs provided are mainly non human gene IDs. Please verify the organism and gene ID settings.")} # less than 60% of IDs are not ENSEMBL human gene IDs
+    }
+    
+    
+  }
+  
   
   return(paste("File loaded succesfully and correctly interpreted. ",c("h"="","m"="m")[version],"MCP-counter will be run shortly.",sep=""))
   
@@ -324,7 +342,7 @@ function(input, output) {
         
         if(input$organism=="Mouse (Mus musculus)"){estimates$version <- "m"}
         
-        diagnostic <- formatDiagnostic(gep,estimates$version)
+        diagnostic <- formatDiagnostic(gep,estimates$version,input$geneIDs)
         
         output$diagnosticResult <- renderText(diagnostic)
         
