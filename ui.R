@@ -9,7 +9,7 @@ options(shiny.maxRequestSize=50*1024^2)
 options(java.parameters = "-Xmx2048m")
 
 # user interface: specify all input and output that are present in the app
-ui <- navbarPage(title = "webMCP",
+ui <- navbarPage(title = "webMCP-counter",
                  
                  
                  # Several tabs: 1 to run MCP-counter, the others for downstream analyses
@@ -36,11 +36,11 @@ ui <- navbarPage(title = "webMCP",
                           
                           img(src="three_stickers.png", width=100,height=100, align="right"),
                           
-                          tags$h1("Welcome to webMCP"),
+                          tags$h1("Welcome to webMCP-counter"),
                           
                           tags$h4("Web app for MCP-counter and mMCP-counter"),
                           
-                          tags$p("To run MCP-counter or mMCP-counter using this web interface, you first need to prepare your data in a suitable format. 4 formats are accepted: Excel spreadsheet or text-based with tab, comma or semi-colon separator. Text-format are preferred as they are more memory-efficient. In all cases, the samples must be put in columns, and genes in rows. The first column must imperatively be composed of gene symbols (ENSEMBL IDs are not yet supported). The first line must be composed of the corresponding sample IDs, and the cell above gene symbols must be filled for Excel spreadsheet format."),
+                          tags$p("To run MCP-counter or mMCP-counter using this web interface, you first need to prepare your data in a suitable format. 4 formats are accepted: Excel spreadsheet or text-based with tab, comma or semi-colon separator. Text-format are preferred as they are more memory-efficient. In all cases, the samples must be put in columns, and genes in rows. The first column must imperatively be composed of gene symbols (ENSEMBL IDs are not yet supported). The first line must be composed of the corresponding sample IDs, and the cell above gene symbols must be filled for Excel spreadsheet format. If you have further questions or require assistance, please open a new issue on the",tags$a(href="https://github.com/FPetitprez/webMCP-counter/issues/new/choose","webMCP-counter Github page"),"."),
                           
                           
                           sidebarLayout(
@@ -130,7 +130,7 @@ ui <- navbarPage(title = "webMCP",
                  tabPanel("What is MCP-counter?",
                           
                           tags$h2("What is MCP-counter"),
-                          tags$p("In this section, we will rapidly describe what MCP-counter is. Do not hesitate to",tags$a(href="mailto:florent.petitprez@ligue-cancer.net","get in touch"),"if you have more questions."),
+                          tags$p("In this section, we will rapidly describe what MCP-counter is. If you have further questions or require assistance, please open a new issue on the",tags$a(href="https://github.com/FPetitprez/webMCP-counter/issues/new/choose","webMCP-counter Github page"),"."),
                           tags$br(),
                           
                           tags$h3("Objective of the method"),
@@ -157,13 +157,15 @@ ui <- navbarPage(title = "webMCP",
                  ),
                  
                  
-                 tabPanel("How to run webMCP",
+                 tabPanel("How to run webMCP-counter",
+                          
+                          tags$p("This section describes the main steps to run webMCP-counter. If you have problems or questions, please ask them as a new issue on the",tags$a(href="https://github.com/FPetitprez/webMCP-counter/issues/new/choose","webMCP-counter Github page"),"."),
                           
                           tags$h2("Prepare and load gene expression data"),
                           tags$p("To run MCP-counter or mMCP-counter using this web interface, you first need to prepare your data in a suitable format. 4 formats are accepted: Excel spreadsheet or text-based with tab, comma or semi-colon separator. Text-format are preferred as they are more memory-efficient. In all cases, the samples must be put in columns, and genes in rows. The first column must imperatively be composed of gene symbols (ENSEMBL IDs are not yet supported). The first line must be composed of the corresponding sample IDs, and the cell above gene symbols must be filled for Excel spreadsheet format."),
                           tags$p("Once your data is ready in a correct format, you can upload it using the upload button on the step 1 tab. Then you need to specify the format you have chosen (Excel spreadsheet or text file, in this case you need to specify the separator) and the organism of origin (human or mouse). Then simply click the `run (m)MCP-counter` button."),
                           tags$p("In case the file format is not correct, a text will appear below the button telling you what went wrong. If everything is correct, MCP-counter will be run on your data."),
-                          tags$p("Alternatively, if you simply wish to see what webMCP can do, you can select the TCGA SARC (Soft-tissue Sarcoma from The Cancer Genome Atlas project) dataset that is provided as an example. Simply tick the box and the run button. All parameters will be automatically set and MCP-counter will be run on the TCGA SARC dataset."),
+                          tags$p("Alternatively, if you simply wish to see what webMCP-counter can do, you can select the TCGA SARC (Soft-tissue Sarcoma from The Cancer Genome Atlas project) dataset that is provided as an example. Simply tick the box and the run button. All parameters will be automatically set and MCP-counter will be run on the TCGA SARC dataset."),
                           tags$br(),
                           
                           tags$h2("Obtain the (m)MCP-counter scores"),
@@ -181,7 +183,7 @@ ui <- navbarPage(title = "webMCP",
                  
                  tabPanel("Citation",
                           
-                          tags$p("If you use webMCP in a scientific publication, please cite the original article of the MCP-counter version you used (human or mouse), as well as:"),
+                          tags$p("If you use webMCP-counter in a scientific publication, please cite the original article of the MCP-counter version you used (human or mouse), as well as:"),
                           tags$p("CITATION INFO FOR THE SHINY APP"),
                           tags$br(),
                           tags$p("For the human MCP-counter: Becht, E., Giraldo, N.A., Lacroix, L. et al. ", tags$a(href="https://doi.org/10.1186/s13059-016-1070-5","Estimating the population abundance of tissue-infiltrating immune and stromal cell populations using gene expression."),"Genome Biol 17, 218 (2016)."),
@@ -189,7 +191,7 @@ ui <- navbarPage(title = "webMCP",
                           tags$p("For the murine mMCP-counter: Petitprez, F., Lévy, S., Sun, C.-M., Meylan, M. et al. ", tags$a(href="https://doi.org/10.1101/2020.03.10.985176", "The murine Microenvironment Cell Population counter method to estimate abundance of tissue-infiltrating immune and stromal cell populations in murine samples using gene expression."), "bioRXiv (2020)"),
                           tags$br(),
                           tags$br(),
-                          tags$p(style="color:grey","webMCP was developped by",tags$a(href="https://florentpetitprez.netlify.app/","Florent Petitprez"),"and Maxime Meylan"),
+                          tags$p(style="color:grey","webMCP-counter was developped by",tags$a(href="https://florentpetitprez.netlify.app/","Florent Petitprez"),"and Maxime Meylan"),
                           
                           
                           
