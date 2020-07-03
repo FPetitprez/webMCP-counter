@@ -40,7 +40,7 @@ ui <- navbarPage(title = "webMCP-counter",
                           
                           tags$h4("Web app for MCP-counter and mMCP-counter"),
                           
-                          tags$p("To run MCP-counter or mMCP-counter using this web interface, you first need to prepare your data in a suitable format. 4 formats are accepted: Excel spreadsheet or text-based with tab, comma or semi-colon separator. Text-format are preferred as they are more memory-efficient. In all cases, the samples must be put in columns, and genes in rows. The first column must imperatively be composed of gene symbols (ENSEMBL IDs are not yet supported). The first line must be composed of the corresponding sample IDs, and the cell above gene symbols must be filled for Excel spreadsheet format. If you have further questions or require assistance, please open a new issue on the",tags$a(href="https://github.com/FPetitprez/webMCP-counter/issues/new/choose","webMCP-counter Github page.",target="_blank")),
+                          tags$p("To run MCP-counter or mMCP-counter using this web interface, you first need to prepare your data in a suitable format. 4 formats are accepted: Excel spreadsheet or text-based with tab, comma or semi-colon separator. Text-format are preferred as they are more memory-efficient. In all cases, the samples must be put in columns, and genes in rows. The first column must imperatively be composed of gene symbols or gene ENSEMBL IDs. The first line must be composed of the corresponding sample IDs, and the cell above gene symbols must be filled. If you have further questions or require assistance, please open a new issue on the",tags$a(href="https://github.com/FPetitprez/webMCP-counter/issues/new/choose","webMCP-counter Github page.",target="_blank")),
                           
                           
                           sidebarLayout(
@@ -157,13 +157,16 @@ ui <- navbarPage(title = "webMCP-counter",
                  ),
                  
                  
-                 tabPanel("How to run webMCP-counter",
+                 tabPanel("Help for webMCP-counter",
                           
-                          tags$p("This section describes the main steps to run webMCP-counter. If you have problems or questions, please ask them as a new issue on the",tags$a(href="https://github.com/FPetitprez/webMCP-counter/issues/new/choose","webMCP-counter Github page.",target="_blank")),
+                          tags$p("This section describes the main steps to run webMCP-counter. If you need more assistance or wish to suggest an improvement to webMCP-counter, please ask open a new issue on the",tags$a(href="https://github.com/FPetitprez/webMCP-counter/issues/new/choose","webMCP-counter Github page.",target="_blank")),
                           
                           tags$h2("Prepare and load gene expression data"),
-                          tags$p("To run MCP-counter or mMCP-counter using this web interface, you first need to prepare your data in a suitable format. 4 formats are accepted: Excel spreadsheet or text-based with tab, comma or semi-colon separator. Text-format are preferred as they are more memory-efficient. In all cases, the samples must be put in columns, and genes in rows. The first column must imperatively be composed of gene symbols (ENSEMBL IDs are not yet supported). The first line must be composed of the corresponding sample IDs, and the cell above gene symbols must be filled for Excel spreadsheet format."),
-                          tags$p("Once your data is ready in a correct format, you can upload it using the upload button on the step 1 tab. Then you need to specify the format you have chosen (Excel spreadsheet or text file, in this case you need to specify the separator) and the organism of origin (human or mouse). Then simply click the `run (m)MCP-counter` button."),
+                          tags$p("To run MCP-counter or mMCP-counter using this web interface, you first need to prepare your data in a suitable format. 4 formats are accepted: Excel spreadsheet or text-based with tab, comma or semi-colon separator. Text-format are preferred as they are more memory-efficient. In all cases, the following formatting reules must be followed:"),
+                          tags$p("- Samples must be put in columns, and genes in rows."),
+                          tags$p("- The first column must imperatively be composed of gene symbols or gene ENSEMBL IDs."),
+                          tags$p("- The first line must be composed of the corresponding sample IDs, and the cell above gene symbols must be filled."),
+                          tags$p("Once your data is ready in a correct format, you can upload it using the upload button on the step 1 tab. Then you need to specify the format you have chosen (Excel spreadsheet or text file, in this case you need to specify the separator), the organism of origin (human or mouse) and the format for gene IDs (Gene symbol or ENSEMBL ID). Then simply click the `run (m)MCP-counter` button."),
                           tags$p("In case the file format is not correct, a text will appear below the button telling you what went wrong. If everything is correct, MCP-counter will be run on your data."),
                           tags$p("Alternatively, if you simply wish to see what webMCP-counter can do, you can select the TCGA SARC (Soft-tissue Sarcoma from The Cancer Genome Atlas project) dataset that is provided as an example. Simply tick the box and the run button. All parameters will be automatically set and MCP-counter will be run on the TCGA SARC dataset."),
                           tags$br(),
@@ -175,7 +178,11 @@ ui <- navbarPage(title = "webMCP-counter",
                           tags$h2("Downstream analysis"),
                           tags$p("After you have run (m)MCP-counter on your data, you can use the step 2 tab to conduct basic downstream analysis. In this tab, you will be able to plot a heatmap representing the scores on your data for the populations that are of interest to you. You will also be able to cluster your samples in as many groups as you wish (between 2 and 10), and visualize the differences between cell types abundances between the clusters."),
                           tags$p("To run this downstream analysis, specify the number of clusters you want, and select the populations you wish to be used for the clustering. Then click the `update` button. A heatmap appears on the right, representing normalized MCP-counter scores of the requested populations on your samples. The dendrogram (classification tree) above the heatmap is colored according to the clusters. Below the heatmap, violin plots or boxplots (if one cluster has 2 or less samples) are displayed for all requested populations, showing the differences between the clusters. Kruskal-Wallis tests, and pairwise comparisons using Dunn test are also performed to estimate significance of the inter-cluster differences. A download button also offers you to obtain the cluster to which all your samples belong."),
-                          tags$p("If you wish to modify the number of clusters and/or the included populations, simply adapt the settings on the left panel and click on the update button.")
+                          tags$p("If you wish to modify the number of clusters and/or the included populations, simply adapt the settings on the left panel and click on the update button."),
+                          
+                          tags$h2("Need more help?"),
+                          tags$p("If you need more assistance or wish to suggest an improvement to webMCP-counter, please ask open a new issue on the",tags$a(href="https://github.com/FPetitprez/webMCP-counter/issues/new/choose","webMCP-counter Github page.",target="_blank"))
+                          
                           
                           
                  ),
