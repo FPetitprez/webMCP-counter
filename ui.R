@@ -179,10 +179,16 @@ ui <- navbarPage(title = "webMCP-counter",
                           tags$p("After you have run (m)MCP-counter on your data, you can use the step 2 tab to conduct basic downstream analysis. In this tab, you will be able to plot a heatmap representing the scores on your data for the populations that are of interest to you. You will also be able to cluster your samples in as many groups as you wish (between 2 and 10), and visualize the differences between cell types abundances between the clusters."),
                           tags$p("To run this downstream analysis, specify the number of clusters you want, and select the populations you wish to be used for the clustering. Then click the `update` button. A heatmap appears on the right, representing normalized MCP-counter scores of the requested populations on your samples. The dendrogram (classification tree) above the heatmap is colored according to the clusters. Below the heatmap, violin plots or boxplots (if one cluster has 2 or less samples) are displayed for all requested populations, showing the differences between the clusters. Kruskal-Wallis tests, and pairwise comparisons using Dunn test are also performed to estimate significance of the inter-cluster differences. A download button also offers you to obtain the cluster to which all your samples belong."),
                           tags$p("If you wish to modify the number of clusters and/or the included populations, simply adapt the settings on the left panel and click on the update button."),
+                          tags$br(),
+                          
                           
                           tags$h2("Need more help?"),
-                          tags$p("If you need more assistance or wish to suggest an improvement to webMCP-counter, please ask open a new issue on the",tags$a(href="https://github.com/FPetitprez/webMCP-counter/issues/new/choose","webMCP-counter Github page.",target="_blank"))
+                          tags$p("If you need more assistance or wish to suggest an improvement to webMCP-counter, please ask open a new issue on the",tags$a(href="https://github.com/FPetitprez/webMCP-counter/issues/new/choose","webMCP-counter Github page.",target="_blank")),
+                          tags$br(),
                           
+                          
+                          img(src="diagram.png", width=700),
+                          tags$p(style="color:grey","Diagram showing the 2 steps of webMCP-counter.")
                           
                           
                  ),
