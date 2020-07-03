@@ -367,10 +367,6 @@ function(input, output) {
           #gep <- readxl::read_xls(userFile,sheet= 1,check.names=FALSE,stringsAsFactors=FALSE,colClasses = c("character",rep("numeric",10000)))
           gep <- data.frame(readxl::read_excel(userFile,sheet= 1),check.names = F)
           
-          sampleNames <- unlist(gep[1,])
-          gep <- gep[2:nrow(gep),]
-          colnames(gep) <- sampleNames
-          
           geneNames <- gep[,1]
           gep <- gep[,2:ncol(gep)]
           gep <- data.frame(apply(gep,2,as.numeric),check.names = F)
