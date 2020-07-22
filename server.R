@@ -62,8 +62,7 @@ formatDiagnostic <- function(table, version = c("h","m")[1],geneIDs){
   # Test if all columns are numeric
   if(!all(apply(table,2,is.numeric))){return("Non-numeric columns have been detected. Please provide a numeric-only table, with the exception of sample and gene names.")}
   
-  # Test if ENSEMBL gene IDs (to be supported in a future version)
-  #if(length(grep("ENS",rownames(table))) > 50){return("ENSEMBL gene IDs detected. For now, this program only accepts HUGO Gene Symbols. Please provide the gene names as Gene Symbols. The support for ENSEMBL Gene IDs is planned in a future release.")}
+  if(sum(is.na(as.numeric(rownames(table))))<(0.5*nrow(table))){return("Gene ID provided cannot be matched to either gene symbols or ENSEMBL IDs. Please note that other gene IDs, including ENTREZ, are not supported.")}
   
   if(geneIDs=="Gene symbol"){
     
