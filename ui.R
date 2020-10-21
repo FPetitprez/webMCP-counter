@@ -142,7 +142,7 @@ ui <- navbarPage(title = "webMCP-counter",
                           tags$p("The global idea of MCP-counter is to seek genes that are expressed in one cell population (and all its sub-populations), and not expressed by all other cell types.",
                                  "These genes are called",tags$i("transcriptomic markers."),"The plot below illustrates the expression pattern of one such transcriptomic marker for murine mast cells."),
                           img(src="mMCPcounter_specificMarker.png", width=1000),
-                          tags$p(style="color:grey","Source: Petitprez et al., BioRXiv, 2020"),
+                          tags$p(style="color:grey","Source: Petitprez et al., Genome Medicine, 2020"),
                           tags$p("The determination of a gene as a transcriptomic marker is based on three criteria: specific variablility (i.e. overexpression in the population of interest as compared to the expression in all other populations), aspecific variability (i.e. overexpression in the populations of interest as compared with the variability within all other populations), and sensitivity-specificity as measured with the area under the ROC curve. These selection criteria ensure sufficient specificity of the considered gene signatures. Therefore, the expression level of these genes is proportional the the abundance of the designated cell populations in the bulk samples."),
                           tags$br(),
                           
