@@ -150,7 +150,7 @@ ui <- navbarPage(title = "webMCP-counter",
                           tags$p("The scores returned by MCP-counter or mMCP-counter are expressed in arbitrary units. These scores are proportional to the amount of the estimated cell populations in the sample. Each population having a different arbitrary unit. Therefore, it cannot be used to compare the abundance of different populations within one sample. However, these scores allow the comparison of the abundance of one cell population between samples in a cohort. This is a fundamental difference with other deconvolution methods such as CIBERSORT which estimate the relative composition within the overall immune infiltrate, and therefore allow to compare between populations within a sample, but not between samples. For more details about these difference and a benchmark of different deconvolution methods to estimate immune and stromal sample compositon, you can refer to",tags$a(href="https://doi.org/10.1093/bioinformatics/btz363", "Sturm et al., Bioinformatics, 2019")),
                           tags$p("The plot below illustrates this fundamental difference of approach. The left anel is a schematic representation of three possible cell mixtures, while the middle and right panels represent, respectively, the estimates that would be suggested by CIBERSORT and MCP-counter. We notice that the estimates of CIBERSORT for the first two mixes are similar, as they are expressed as percentages of cells among the screened populations only, regardless of the total infiltration in the sample. Conversely, MCP-counter scores are proportional to the amount of each cell population in the total sample, which allows inter-sample comparison for each population. However, these scores are expressed in a different arbitrary unit for each population, which prevents intra-sample comparison between populations. CIBERSORT allows this type of comparison"),
                           img(src="compCIBERSORT.png", width = 800),
-                          tags$p(style="color:grey","Source: Petitprez et al., Cancer Immunology Immunotherapy, 2017"),
+                          tags$p(style="color:grey","Source: Petitprez et al., Cancer Immunology Immunotherapy, 2017")
                           
                           
                           
@@ -204,7 +204,18 @@ ui <- navbarPage(title = "webMCP-counter",
                           tags$p("For the murine mMCP-counter: Petitprez, F., Lévy, S., Sun, C.-M., Meylan, M. et al. ", tags$a(href="https://doi.org/10.1186/s13073-020-00783-w", "The murine Microenvironment Cell Population counter method to estimate abundance of tissue-infiltrating immune and stromal cell populations in murine samples using gene expression."), "Genome Med 12, 86 (2020)."),
                           tags$br(),
                           tags$br(),
-                          tags$p(style="color:grey","webMCP-counter was developped by",tags$a(href="https://florentpetitprez.netlify.app/","Florent Petitprez"),"and Maxime Meylan"),
+                          tags$p(style="color:grey","webMCP-counter was developped by",tags$a(href="https://florentpetitprez.netlify.app/","Florent Petitprez"),"and Maxime Meylan")
+                          
+                          
+                          
+                 ),
+                 
+                 
+                 tabPanel("Version",
+                          
+                          tags$p("This is webMCP-counter version 1.0 (December 2020)."),
+                          tags$br(),
+                          tags$p(paste0("This version runs the version ",packageVersion("MCPcounter")," of the MCPcounter package and version ", packageVersion("mMCPcounter"), " of the mMCPcounter package."))
                           
                           
                           
