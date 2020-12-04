@@ -197,7 +197,7 @@ ui <- navbarPage(title = "webMCP-counter",
                  tabPanel("Citation",
                           
                           tags$p("If you use webMCP-counter in a scientific publication, please cite the original article of the MCP-counter version you used (human or mouse), as well as:"),
-                          tags$p("CITATION INFO FOR THE SHINY APP"),
+                          tags$p("Meylan, M., Becht, E., sautès-Fridman, C., de Reyniès, A., Fridman, W.H. and Petitprez F. ",tags$a(href="https://biorxiv.org/cgi/content/short/2020.12.03.400754v1","webMCP-counter: a web interface for transcriptomics-based quantification of immune and stromal cells in heterogeneous human or murine samples"), "bioRXiv (2020)."),
                           tags$br(),
                           tags$p("For the human MCP-counter: Becht, E., Giraldo, N.A., Lacroix, L. et al. ", tags$a(href="https://doi.org/10.1186/s13059-016-1070-5","Estimating the population abundance of tissue-infiltrating immune and stromal cell populations using gene expression."),"Genome Biol 17, 218 (2016)."),
                           tags$br(),
