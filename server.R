@@ -384,7 +384,8 @@ function(input, output) {
           geneNames <- gep[,1]
           gep <- gep[,2:ncol(gep)]
           if(any(duplicated(geneNames))){
-            gep <- cit.dfAggregate(gep,geneNames,1,mean.na)
+            gep <- gep[!duplicated(geneNames),]
+            rownames(gep) <- geneNames[!duplicated(geneNames)]
           }
           else{rownames(gep) <- geneNames}
           
