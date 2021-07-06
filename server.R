@@ -17,6 +17,10 @@ library(dunn.test)
 # Local functions #
 ###################
 
+# Avoid error: cannot open file 'Rplots.pdf'
+pdf(NULL)
+
+
 
 # adapation of round: does nothing if applied to NULL. This is meant to avoid the error when no user data has been provided yet
 local.round <- function(x,digits=2){
