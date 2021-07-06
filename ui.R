@@ -12,6 +12,23 @@ options(java.parameters = "-Xmx2048m")
 ui <- navbarPage(title = "webMCP-counter",
                  
                  
+                 # Tracking code
+                 tags$head(HTML(
+                   "<script type='text/javascript'>
+                     var _paq = window._paq = window._paq || [];
+                     _paq.push(['trackPageView']);
+                   _paq.push(['enableLinkTracking']);
+                   (function() {
+                     var u='//134.157.229.105/';
+                     _paq.push(['setTrackerUrl', u+'matomo.php']);
+                     _paq.push(['setSiteId', '1']);
+                     var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+                     g.type='text/javascript'; g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+                   })();
+                   </script>"
+                 )),
+                 
+                 
                  # Several tabs: 1 to run MCP-counter, the others for downstream analyses
                  tabPanel("Step 1: run (m)MCP-counter",
                           
