@@ -19,7 +19,7 @@ ui <- navbarPage(title = "webMCP-counter",
                      _paq.push(['trackPageView']);
                    _paq.push(['enableLinkTracking']);
                    (function() {
-                     var u='//134.157.229.105/';
+                     var u='http://134.157.229.105:3838/webMCP/';
                      _paq.push(['setTrackerUrl', u+'matomo.php']);
                      _paq.push(['setSiteId', '1']);
                      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
