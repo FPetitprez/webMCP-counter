@@ -226,7 +226,7 @@ ui <- navbarPage(title = "webMCP-counter",
                  
                  tabPanel("Version",
                           
-                          tags$p("This is webMCP-counter version 1.0 (December 2020)."),
+                          tags$p("This is webMCP-counter version 1.1 (July 2021)."),
                           tags$br(),
                           tags$p(paste0("This version runs the version ",packageVersion("MCPcounter")," of the MCPcounter package and version ", packageVersion("mMCPcounter"), " of the mMCPcounter package."))
                           
