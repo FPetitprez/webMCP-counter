@@ -426,6 +426,10 @@ function(input, output) {
             if(!is.null(MCPcountercall$warnings)){
               showNotification(MCPcountercall$warnings[1],type="error",duration = NULL)
             }
+            if(ncol(estimates$est)==0){
+              showNotification("No signature gene was found in the genes provided.",type="error",duration = NULL)
+              estimates$est <- data.frame(matrix(0,ncol=1,nrow = ncol(gep)),row.names = colnames(gep))
+            }
           }
           
         }
