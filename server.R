@@ -384,7 +384,7 @@ function(input, output) {
         else{ # text format, only separator changes
           sepText <- substr(input$fileType,1,3)
           sep <- c("tab" = "\t", "com" = ",", "sem" = ";")[sepText]
-          gep <- read.table(userFile,sep=sep,header = TRUE, stringsAsFactors = FALSE, check.names = FALSE)
+          gep <- read.table(userFile,sep=sep,header = TRUE, stringsAsFactors = FALSE, check.names = FALSE,row.names = NULL)
           geneNames <- gep[,1]
           gep <- gep[,2:ncol(gep)]
           if(any(duplicated(geneNames))){
