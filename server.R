@@ -411,6 +411,14 @@ function(input, output) {
             if(!is.null(MCPcountercall$warnings)){
               showNotification(MCPcountercall$warnings[1],type="error",duration = NULL)
             }
+            if(ncol(estimates$est)>0 & ncol(estimates$est)<10){
+              missingPop <- setdiff(c("T cells","CD8 T cells","Cytotoxic lymphocytes","B lineage","NK cells","Monocytic lineage","Myeloid dendritic cells","Neutrophils","Endothelial cells","Fibroblasts"),colnames(estimates$est))
+              showNotification(paste("No genes were found for population(s): ",paste(missingPop,collapse = ", "),".",sep=""),type="error",duration = NULL)
+            }
+            if(ncol(estimates$est)==0){
+              showNotification("No signature gene was found in the genes provided.",type="error",duration = NULL)
+              estimates$est <- data.frame(matrix(0,ncol=1,nrow = ncol(gep)),row.names = colnames(gep))
+            }
           }
           else{
             MCPcountercall <- catchToList(mMCPcounter.estimate(gep,features = ifelse(input$geneIDs=="Gene symbol","Gene.Symbol","ENSEMBL.ID")))
