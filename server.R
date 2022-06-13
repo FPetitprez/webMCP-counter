@@ -278,43 +278,6 @@ cit.load <- function (filename)
   NULL
 }
 
-#function to agregate a data frame based on a partition. Useful to deal with repeated genes in gene list. 
-cit.dfAggregate <- function(data, partition, MARGIN = 1, fAggreg = mean.na) 
-{
-  cMARGIN <- setdiff(c(1, 2), MARGIN)
-  n <- length(partition)
-  N <- dim(data)[MARGIN]
-  p <- dim(data)[cMARGIN]
-  if (n != N) 
-    stop("Error - function cit.dfAggregate : size of partition doesn't correspond to data dimension")
-  if (MARGIN == 1 & (identical(fAggreg, mean.na) | identical(fAggreg, 
-                                                             mean) | identical(fAggreg, sum) | identical(fAggreg, 
-                                                                                                         sum.na)) & !any(is.na(colMeans(data)))) {
-    res <- rowsum(data, partition)
-    if (identical(fAggreg, mean.na) | identical(fAggreg, 
-                                                mean)) {
-      len <- sapply(split(1:nrow(data), partition), length)
-      res <- res/len[rownames(res)]
-    }
-    return(res)
-  }
-  d <- data
-  if (MARGIN == 2) 
-    d <- t(data)
-  nna <- function(z) {
-    as.numeric(!is.na(z))
-  }
-  d <- rowsum(d, partition, na.rm = T)/rowsum(apply(d, 2, nna), 
-                                              partition)
-  d <- as.data.frame(apply(d, 2, function(z) {
-    try(z[which(is.nan(z))] <- NA)
-    z
-  }))
-  if (MARGIN == 2) 
-    d <- as.data.frame(t(d))
-  d
-}
-
 
 
 
@@ -375,7 +338,8 @@ function(input, output) {
           gep <- data.frame(apply(gep,2,as.numeric),check.names = F)
           
           if(any(duplicated(geneNames))){
-            gep <- cit.dfAggregate(gep,geneNames,1,mean.na)
+            gep <- gep[!duplicated(geneNames),]
+            rownames(gep) <- geneNames[!duplicated(geneNames)]
           }
           else{rownames(gep) <- geneNames}
           
